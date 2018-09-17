@@ -10,12 +10,16 @@ public class GameController : MonoBehaviour {
     int turnCount;
     public GameObject winPanel;
     public Text winText;
+    public Text Turn;
+    public GameObject restartButton;
 
     void Awake()
     {
         turnCount = 0;
         winPanel.SetActive(false);
+        restartButton.SetActive(false);
         playerSide = "X";
+        Turn.text = playerSide;
         SetGameControllerReferenceOnButtons();
     }
 
@@ -84,6 +88,7 @@ public class GameController : MonoBehaviour {
         if(turnCount == 9)
         {
             winPanel.SetActive(true);
+            restartButton.SetActive(true);
             winText.text = "DRAW";
             SetBoardInteractable(false);
         }
@@ -99,13 +104,29 @@ public class GameController : MonoBehaviour {
 
     void GameOver()
     {
+        restartButton.SetActive(true);
         winPanel.SetActive(true);
         winText.text = playerSide + " WIN";
         SetBoardInteractable(false);
     }
 
+    public void Restart()
+    {
+        turnCount = 0;
+        winPanel.SetActive(false);
+        restartButton.SetActive(false);
+        playerSide = "X";
+        Turn.text = playerSide;
+        SetBoardInteractable(true);
+        for(int i = 0; i < buttonList.Length; i++)
+        {
+            buttonList[i].text = "";
+        }
+    }
+
     public void ChangePlayerSide()
     {
         playerSide = (playerSide == "X") ? "O" :"X";
+        Turn.text = playerSide;
     }
 }
