@@ -13,6 +13,7 @@ public class Space : MonoBehaviour {
     {
         textButton.text = gameController.GetPlayerSide();
         button.interactable = false;
+        gameController.EndTurn();
     }
 
     public void SetGameControllerReference(GameController gameController)
