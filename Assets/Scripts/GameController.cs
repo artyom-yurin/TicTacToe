@@ -12,9 +12,11 @@ public class GameController : MonoBehaviour {
     public Text winText;
     public Text Turn;
     public GameObject restartButton;
+    bool endGame;
 
     void Awake()
     {
+        endGame = false;
         turnCount = 0;
         winPanel.SetActive(false);
         restartButton.SetActive(false);
@@ -85,7 +87,7 @@ public class GameController : MonoBehaviour {
             GameOver();
         }
 
-        if(turnCount == 9)
+        if(!endGame && turnCount >= 9)
         {
             winPanel.SetActive(true);
             restartButton.SetActive(true);
@@ -104,6 +106,7 @@ public class GameController : MonoBehaviour {
 
     void GameOver()
     {
+        endGame = true;
         restartButton.SetActive(true);
         winPanel.SetActive(true);
         winText.text = playerSide + " WIN";
@@ -113,6 +116,7 @@ public class GameController : MonoBehaviour {
     public void Restart()
     {
         turnCount = 0;
+        endGame = false;
         winPanel.SetActive(false);
         restartButton.SetActive(false);
         playerSide = "X";
