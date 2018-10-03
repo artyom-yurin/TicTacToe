@@ -2,25 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading;
+
 
 public class GameController : MonoBehaviour {
 
     public Text[] buttonList;
     string playerSide;
-    int turnCount;
+    string computerSide;
+    string currentSide;
     public GameObject winPanel;
     public Text winText;
     public Text Turn;
     public GameObject restartButton;
-    bool endGame;
 
     void Awake()
     {
-        endGame = false;
-        turnCount = 0;
         winPanel.SetActive(false);
         restartButton.SetActive(false);
         playerSide = "X";
+        computerSide = "O";
+        currentSide = "X";
         Turn.text = playerSide;
         SetGameControllerReferenceOnButtons();
     }
@@ -33,67 +35,80 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    public string GetPlayerSide()
+    public string GetCurrentSide()
     {
-        return playerSide;
+        return currentSide;
     }
 
     public void EndTurn()
     {
-        turnCount += 1;
-        CheckWin();
-        ChangePlayerSide();
+        if(!CheckEndGame())
+        {
+            ChangePlayerSide();
+        }
     }
 
-    public void CheckWin()
+    public bool Winning(Text[] buttonList, string playerSide)
     {
-        if(buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide)
+        if (buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[3].text == playerSide && buttonList[4].text == playerSide && buttonList[5].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[6].text == playerSide && buttonList[7].text == playerSide && buttonList[8].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[0].text == playerSide && buttonList[3].text == playerSide && buttonList[6].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[1].text == playerSide && buttonList[4].text == playerSide && buttonList[7].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[2].text == playerSide && buttonList[5].text == playerSide && buttonList[8].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[0].text == playerSide && buttonList[4].text == playerSide && buttonList[8].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
         if (buttonList[2].text == playerSide && buttonList[4].text == playerSide && buttonList[6].text == playerSide)
         {
-            GameOver();
+            return true;
         }
 
-        if(!endGame && turnCount >= 9)
+        return false;
+    }
+
+    public bool CheckEndGame()
+    {
+        if(Winning(buttonList, currentSide))
+        {
+            GameOver();
+            return true;
+        }
+        else if(GetAvailableCells(buttonList).Count == 0)
         {
             winPanel.SetActive(true);
             restartButton.SetActive(true);
             winText.text = "DRAW";
             SetBoardInteractable(false);
+            return true;
         }
+        return false;
     }
 
     public void SetBoardInteractable(bool state)
@@ -106,20 +121,19 @@ public class GameController : MonoBehaviour {
 
     void GameOver()
     {
-        endGame = true;
         restartButton.SetActive(true);
         winPanel.SetActive(true);
-        winText.text = playerSide + " WIN";
+        winText.text = currentSide + " WIN";
         SetBoardInteractable(false);
     }
 
     public void Restart()
     {
-        turnCount = 0;
-        endGame = false;
         winPanel.SetActive(false);
         restartButton.SetActive(false);
         playerSide = "X";
+        computerSide = "O";
+        currentSide = "X";
         Turn.text = playerSide;
         SetBoardInteractable(true);
         for(int i = 0; i < buttonList.Length; i++)
@@ -128,9 +142,99 @@ public class GameController : MonoBehaviour {
         }
     }
 
+    public List<Text> GetAvailableCells(Text[] board)
+    {
+        List<Text> availableCell = new List<Text>();
+        foreach (Text cell in board)
+        {
+            if(cell.text == "")
+            {
+                availableCell.Add(cell);
+            }
+        }
+        return availableCell;
+    }
+
+    public int Minimax(Text[] board, int depth, string player)
+    {
+        List<Text> availableCells = GetAvailableCells(board);
+
+        if(Winning(board, computerSide))
+        {
+            return (10 - depth);
+        }
+        else if (Winning(board, playerSide))
+        {
+            return (-10 + depth);
+        }
+        else if (availableCells.Count == 0)
+        {
+            return 0;
+        }
+
+        if(player == computerSide)
+        {
+            int best = -1000;
+            for(int i = 0; i < availableCells.Count; i++)
+            {
+                availableCells[i].text = computerSide;
+                best = Mathf.Max(best, Minimax(board, depth + 1, playerSide));
+                availableCells[i].text = "";
+            }
+            return best;
+        }
+        else
+        {
+            int best = 1000;
+            for (int i = 0; i < availableCells.Count; i++)
+            {
+                availableCells[i].text = playerSide;
+                best = Mathf.Min(best, Minimax(board, depth + 1, computerSide));
+                availableCells[i].text = "";
+            }
+            return best;
+        }
+    }
+
+    public int bestTurn()
+    {
+        int bestVal = -1000;
+        int index = 0;
+
+        for (int i = 0; i < buttonList.Length; i++)
+        {
+            if (buttonList[i].text == "") {
+                buttonList[i].text = computerSide;
+                int currentVal = Minimax(buttonList, 0, playerSide);
+                buttonList[i].text = "";
+                if (currentVal > bestVal)
+                {
+                    bestVal = currentVal;
+                    index = i;
+                }
+            }
+        }
+
+        return index;
+    }
+
     public void ChangePlayerSide()
     {
-        playerSide = (playerSide == "X") ? "O" :"X";
-        Turn.text = playerSide;
+        if (currentSide == playerSide)
+        {
+            currentSide = computerSide;
+            Turn.text = currentSide;
+            buttonList[bestTurn()].GetComponentInParent<Space>().SetSign();
+
+            EndTurn();
+        }
+        else{
+            currentSide = playerSide;
+            Turn.text = currentSide;
+        }
+        
+        /*for two player mode
+        playerSide = (playerSide == "X") ? "O" : "X";
+        Turn.text = playerSide;*/
     }
 }

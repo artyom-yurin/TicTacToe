@@ -11,8 +11,13 @@ public class Space : MonoBehaviour {
 
     public void SetSign()
     {
-        textButton.text = gameController.GetPlayerSide();
+        textButton.text = gameController.GetCurrentSide();
         button.interactable = false;
+    }
+
+    public void onClick()
+    {
+        SetSign();
         gameController.EndTurn();
     }
 
