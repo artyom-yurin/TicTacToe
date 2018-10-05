@@ -7,6 +7,7 @@ using System.Threading;
 
 public class GameController : MonoBehaviour {
 
+    public int mode;
     public Text[] buttonList;
     string playerSide;
     string computerSide;
@@ -220,21 +221,26 @@ public class GameController : MonoBehaviour {
 
     public void ChangePlayerSide()
     {
-        if (currentSide == playerSide)
+        if(mode == 0)
         {
-            currentSide = computerSide;
-            Turn.text = currentSide;
-            buttonList[bestTurn()].GetComponentInParent<Space>().SetSign();
+            if (currentSide == playerSide)
+            {
+                currentSide = computerSide;
+                Turn.text = currentSide;
+                buttonList[bestTurn()].GetComponentInParent<Space>().SetSign();
 
-            EndTurn();
+                EndTurn();
+            }
+            else
+            {
+                currentSide = playerSide;
+                Turn.text = currentSide;
+            }
         }
-        else{
-            currentSide = playerSide;
+        else
+        {
+            currentSide = (currentSide == "X") ? "O" : "X";
             Turn.text = currentSide;
         }
-        
-        /*for two player mode
-        playerSide = (playerSide == "X") ? "O" : "X";
-        Turn.text = playerSide;*/
     }
 }
